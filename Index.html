@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AquaShine Car Wash — Premium Auto Care</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: { DEFAULT: '#A3B14B', hover: '#8f9c40', dark: '#5e6629' },
+                        surface: { light: '#FAFAF9', dark: '#050A06', card: '#132316', muted: '#1C1917' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+        ::selection { background: #A3B14B; color: white; }
+        html { scroll-behavior: smooth; }
+
+        .page { display: none; opacity: 0; transform: translateY(20px); }
+        .page.active { display: block; animation: pageIn 0.5s ease forwards; }
+        @keyframes pageIn { to { opacity: 1; transform: translateY(0); } }
+
+        .fade-up { opacity: 0; transform: translateY(30px); transition: all 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
+        .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+        .nav-link { position: relative; }
+        .nav-link::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: #A3B14B; transition: width 0.3s ease; }
+        .nav-link:hover::after, .nav-link.active::after { width: 100%; }
+
+        .lightbox { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; }
+        .lightbox.open { display: flex; animation: fadeIn 0.3s ease; }
+
+        .toast { position: fixed; bottom: 30px; right: 30px; z-index: 200; transform: translateY(100px); opacity: 0; transition: all 0.4s ease; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+
+        .float-anim { animation: float 3s ease-in-out infinite; }
+        .shimmer { background: linear-gradient(90deg, transparent 0%, rgba(163,177,75,0.1) 50%, transparent 100%); background-size: 200% 100%; animation: shimmer 3s infinite; }
+
+        .pricing-card { transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+        .pricing-card:hover { transform: translateY(-8px); }
+        .pricing-popular { border: 2px solid #A3B14B; position: relative; }
+        .pricing-popular::before { content: 'MOST POPULAR'; position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: #A3B14B; color: white; font-size: 11px; font-weight: 600; letter-spacing: 0.1em; padding: 4px 16px; border-radius: 9999px; }
+
+        .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.4s ease; }
+        .faq-answer.open { max-height: 300px; }
+
+        .gallery-item { overflow: hidden; }
+        .gallery-item img { transition: transform 0.7s ease, filter 0.5s ease; }
+        .gallery-item:hover img { transform: scale(1.08); filter: brightness(1.1); }
+
+        .btn-primary { background: #A3B14B; color: white; transition: all 0.3s ease; }
+        .btn-primary:hover { background: #8f9c40; transform: translateY(-2px); box-shadow: 0 8px 25px -8px rgba(163,177,75,0.5); }
+        .btn-secondary { background: white; color: #1C1917; transition: all 0.3s ease; }
+        .btn-secondary:hover { background: #f5f5f4; transform: translateY(-2px); }
+        .btn-outline { border: 1.5px solid rgba(163,177,75,0.5); color: #A3B14B; transition: all 0.3s ease; }
+        .btn-outline:hover { background: #A3B14B; color: white; }
+
+        .stat-number { background: linear-gradient(135deg, #A3B14B, #d4e170); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        input:focus, textarea:focus, select:focus { outline: none; border-color: #A3B14B; box-shadow: 0 0 0 3px rgba(163,177,75,0.15); }
+
+        .mobile-menu { transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
+        .mobile-menu.open { transform: translateX(0); }
+
+        .star-rating i { cursor: pointer; transition: all 0.2s ease; }
+        .star-rating i:hover { transform: scale(1.2); }
+
+        .time-slot.selected { border-color: #A3B14B; background: rgba(163,177,75,0.1); color: #A3B14B; font-weight: 600; }
+    </style>
+</head>
+<body class="font-sans bg-surface-light text-surface-muted antialiased">
+
+    <!-- NAVIGATION -->
+    <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-500">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <a href="javascript:void(0)" onclick="navigateTo('home')" class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded-full bg-brand flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+                    <i data-lucide="droplets" class="w-5 h-5 text-white"></i>
+                </div>
+                <span class="text-xl font-semibold tracking-tight nav-text-color">AquaShine</span>
+            </a>
+            <div class="hidden md:flex items-center gap-8">
+                <a href="javascript:void(0)" onclick="navigateTo('home')" class="nav-link text-sm font-medium nav-text-color active" data-page="home">Home</a>
+                <a href="javascript:void(0)" onclick="navigateTo('services')" class="nav-link text-sm font-medium nav-text-color" data-page="services">Services & Pricing</a>
+                <a href="javascript:void(0)" onclick="navigateTo('gallery')" class="nav-link text-sm font-medium nav-text-color" data-page="gallery">Gallery</a>
+                <a href="javascript:void(0)" onclick="navigateTo('booking')" class="nav-link text-sm font-medium nav-text-color" data-page="booking">Book Now</a>
+                <a href="javascript:void(0)" onclick="navigateTo('contact')" class="nav-link text-sm font-medium nav-text-color" data-page="contact">Contact</a>
+                <a href="javascript:void(0)" onclick="navigateTo('booking')" class="btn-primary px-6 py-2.5 rounded-full text-sm font-medium inline-flex items-center gap-2">
+                    <i data-lucide="calendar" class="w-4 h-4"></i> Book Appointment
+                </a>
+            </div>
+            <button onclick="toggleMobileMenu()" class="md:hidden w-10 h-10 flex items-center justify-center rounded-lg hover:bg-black/5 transition">
+                <i data-lucide="menu" class="w-6 h-6 nav-text-color" id="menuIcon"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- MOBILE MENU -->
+    <div id="mobileMenu" class="mobile-menu fixed inset-y-0 right-0 w-80 max-w-full bg-white z-50 shadow-2xl">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-10">
+                <span class="text-lg font-semibold">Menu</span>
+                <button onclick="toggleMobileMenu()" class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-black/5">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="flex flex-col gap-1">
+                <a href="javascript:void(0)" onclick="navigateTo('home');toggleMobileMenu()" class="px-4 py-3 rounded-xl text-base font-medium hover:bg-brand/10 hover:text-brand transition">Home</a>
+                <a href="javascript:void(0)" onclick="navigateTo('services');toggleMobileMenu()" class="px-4 py-3 rounded-xl text-base font-medium hover:bg-brand/10 hover:text-brand transition">Services & Pricing</a>
+                <a href="javascript:void(0)" onclick="navigateTo('gallery');toggleMobileMenu()" class="px-4 py-3 rounded-xl text-base font-medium hover:bg-brand/10 hover:text-brand transition">Gallery</a>
+                <a href="javascript:void(0)" onclick="navigateTo('booking');toggleMobileMenu()" class="px-4 py-3 rounded-xl text-base font-medium hover:bg-brand/10 hover:text-brand transition">Book Now</a>
+                <a href="javascript:void(0)" onclick="navigateTo('contact');toggleMobileMenu()" class="px-4 py-3 rounded-xl text-base font-medium hover:bg-brand/10 hover:text-brand transition">Contact</a>
+            </div>
+            <a href="javascript:void(0)" onclick="navigateTo('booking');toggleMobileMenu()" class="btn-primary mt-8 w-full py-3 rounded-full text-sm font-medium flex items-center justify-center gap-2">
+                <i data-lucide="calendar" class="w-4 h-4"></i> Book Appointment
+            </a>
+        </div>
+    </div>
+    <div id="mobileOverlay" class="fixed inset-0 bg-black/50 z-40 hidden" onclick="toggleMobileMenu()"></div>
+
+    <!-- ========== PAGE: HOME ========== -->
+    <div id="page-home" class="page active">
+        <!-- Hero -->
+        <section class="relative min-h-screen flex items-center overflow-hidden">
+            <div class="absolute inset-0">
+                <img src="https://picsum.photos/seed/carwash-hero/1920/1080.jpg" alt="Car Wash" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-r from-surface-dark/90 via-surface-dark/70 to-surface-dark/40"></div>
+            </div>
+            <div class="absolute top-1/4 right-1/4 w-[500px] h-[500px] bg-brand/20 rounded-full blur-[120px] animate-pulse"></div>
+            <div class="relative z-10 max-w-7xl mx-auto px-6 pt-32 pb-20 md:pt-40 md:pb-32">
+                <div class="max-w-2xl">
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 mb-8">
+                        <span class="w-2 h-2 rounded-full bg-brand animate-pulse"></span>
+                        <span class="text-xs font-medium text-white/80 uppercase tracking-widest">Premium Auto Care</span>
+                    </div>
+                    <h1 class="text-4xl md:text-5xl lg:text-7xl font-medium text-white leading-[1.1] tracking-tight mb-6">
+                        Your Car Deserves a
+                        <span class="bg-gradient-to-r from-brand to-[#d4e170] bg-clip-text text-transparent">Perfect Shine</span>
+                    </h1>
+                    <p class="text-lg md:text-xl text-white/70 leading-relaxed mb-10 max-w-lg">
+                        Professional car wash & detailing services that make your vehicle look showroom-new. Eco-friendly products, expert care.
+                    </p>
+                    <div class="flex flex-wrap gap-4">
+                        <a href="javascript:void(0)" onclick="navigateTo('booking')" class="btn-primary px-8 py-4 rounded-full text-sm font-medium inline-flex items-center gap-2 shadow-lg shadow-brand/30">
+                            <i data-lucide="calendar" class="w-4 h-4"></i> Book Your Wash
+                        </a>
+                        <a href="javascript:void(0)" onclick="navigateTo('services')" class="px-8 py-4 rounded-full text-sm font-medium text-white border border-white/20 hover:bg-white/10 transition-all inline-flex items-center gap-2">
+                            View Services <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/40">
+                <span class="text-xs uppercase tracking-widest">Scroll</span>
+                <div class="w-5 h-8 border-2 border-white/30 rounded-full flex items-start justify-center p-1">
+                    <div class="w-1 h-2 bg-white/60 rounded-full animate-bounce"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats -->
+        <section class="py-16 bg-surface-muted text-white relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-r from-brand/5 to-transparent"></div>
+            <div class="max-w-7xl mx-auto px-6 relative">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                    <div class="text-center fade-up">
+                        <div class="text-3xl md:text-4xl font-semibold stat-number mb-2">15K+</div>
+                        <div class="text-sm text-white/60">Cars Washed</div>
+                    </div>
+                    <div class="text-center fade-up" style="transition-delay:0.1s">
+                        <div class="text-3xl md:text-4xl font-semibold stat-number mb-2">4.9★</div>
+                        <div class="text-sm text-white/60">Customer Rating</div>
+                    </div>
+                    <div class="text-center fade-up" style="transition-delay:0.2s">
+                        <div class="text-3xl md:text-4xl font-semibold stat-number mb-2">12+</div>
+                        <div class="text-sm text-white/60">Years Experience</div>
+                    </div>
+                    <div class="text-center fade-up" style="transition-delay:0.3s">
+                        <div class="text-3xl md:text-4xl font-semibold stat-number mb-2">100%</div>
+                        <div class="text-sm text-white/60">Eco-Friendly</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Preview -->
+        <section class="py-24 md:py-32">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="grid lg:grid-cols-2 gap-16 items-center">
+                    <div class="fade-up">
+                        <span class="text-xs font-medium uppercase tracking-widest text-brand mb-4 block">About Us</span>
+                        <h2 class="text-3xl md:text-5xl font-medium tracking-tight mb-6">
+                            Where <span class="text-brand">Passion</span> Meets Perfection
+                        </h2>
+                        <p class="text-lg text-[#57534E] leading-relaxed mb-6">
+                            Founded in 2012, AquaShine has grown from a single-bay car wash into the region's most trusted auto care destination. Our team of certified detailers treats every vehicle as if it were their own.
+                        </p>
+                        <p class="text-[#57534E] leading-relaxed mb-8">
+                            We use only biodegradable, pH-balanced products that are tough on dirt but gentle on your car's finish and the environment. Our water reclamation system saves up to 80% of water compared to traditional washes.
+                        </p>
+                        <div class="flex flex-wrap gap-4">
+                            <a href="javascript:void(0)" onclick="navigateTo('contact')" class="btn-primary px-6 py-3 rounded-full text-sm font-medium inline-flex items-center gap-2">
+                                Learn More <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="relative fade-up" style="transition-delay:0.2s">
+                        <div class="relative group">
+                            <img src="https://picsum.photos/seed/carwash-about/800/600.jpg" alt="About AquaShine" class="w-full rounded-3xl shadow-2xl transition-transform duration-700 group-hover:scale-[1.02]">
+                            <div class="absolute -bottom-6 -right-6 bg-brand text-white p-6 rounded-2xl shadow-xl">
+                                <div class="text-2xl font-semibold">12+</div>
+                                <div class="text-sm text-white/80">Years of Excellence</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Services Preview -->
+        <section class="py-24 bg-surface-muted text-white relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-[600px] h-[600px] bg-brand/10 rounded-full blur-[120px]"></div>
+            <div class="max-w-7xl mx-auto px-6 relative">
+                <div class="text-center mb-16 fade-up">
+                    <span class="text-xs font-medium uppercase tracking-widest text-brand mb-4 block">Our Services</span>
+                    <h2 class="text-3xl md:text-5xl font-medium tracking-tight">Premium Care for Every Vehicle</h2>
+                </div>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="bg-surface-card rounded-3xl p-8 border border-white/5 hover:border-brand/30 transition-all duration-500 hover:-translate-y-2 fade-up group">
+                        <div class="w-14 h-14 rounded-2xl bg-brand/20 flex items-center justify-center mb-6 group-hover:bg-brand/30 transition">
+                            <i data-lucide="droplets" class="w-7 h-7 text-brand"></i>
+                        </div>
+                        <h3 class="text-2xl font-medium mb-3">Basic Wash</h3>
+                        <p class="text-white/60 leading-relaxed mb-6">Exterior hand wash, rinse, and towel dry. Perfect for regular maintenance.</p>
+                        <div class="text-3xl font-semibold text-brand mb-4">$25</div>
+                        <a href="javascript:void(0)" onclick="navigateTo('services')" class="text-sm text-brand inline-flex items-center gap-1 hover:gap-2 transition-all">View Details <i data-lucide="arrow-right" class="w-4 h-4"></i></a>
+                    </div>
+                    <div class="bg-surface-card rounded-3xl p-8 border border-brand/30 transition-all duration-500 hover:-translate-y-2 fade-up relative group" style="transition-delay:0.1s">
+                        <div class="absolute top-4 right-4 px-3 py-1 bg-brand rounded-full text-xs font-medium">Popular</div>
+                        <div class="w-14 h-14 rounded-2xl bg-brand/20 flex items-center justify-center mb-6 group-hover:bg-brand/30 transition">
+                            <i data-lucide="sparkles" class="w-7 h-7 text-brand"></i>
+                        </div>
+                        <h3 class="text-2xl font-medium mb-3">Premium Detail</h3>
+                        <p class="text-white/60 leading-relaxed mb-6">Full interior & exterior detailing with wax coating and leather treatment.</p>
+                        <div class="text-3xl font-semibold text-brand mb-4">$89</div>
+                        <a href="javascript:void(0)" onclick="navigateTo('services')" class="text-sm text-brand inline-flex items-center gap-1 hover:gap-2 transition-all">View Details <i data-lucide="arrow-right" class="w-4 h-4"></i></a>
+                    </div>
+                    <div class="bg-surface-card rounded-3xl p-8 border border-white/5 hover:border-brand/30 transition-all duration-500 hover:-translate-y-2 fade-up group" style="transition-delay:0.2s">
+                        <div class="w-14 h-14 rounded-2xl bg-brand/20 flex items-center justify-center mb-6 group-hover:bg-brand/30 transition">
+                            <i data-lucide="shield-check" class="w-7 h-7 text-brand"></i>
+                        </div>
+                        <h3 class="text-2xl font-medium mb-3">Ceramic Shield</h3>
+                        <p class="text-white/60 leading-relaxed mb-6">Advanced ceramic coating for 12-month paint protection and mirror finish.</p>
+                        <div class="text-3xl font-semibold text-brand mb-4">$199</div>
+                        <a href="javascript:void(0)" onclick="navigateTo('services')" class="text-sm text-brand inline-flex items-center gap-1 hover:gap-2 transition-all">View Details <i data-lucide="arrow-right" class="w-4 h-4"></i></a>
+                    </div>
+                </div>
+                <div class="text-center mt-12 fade-up">
+                    <a href="javascript:void(0)" onclick="navigateTo('services')" class="btn-primary px-8 py-4 rounded-full text-sm font-medium inline-flex items-center gap-2">
+                        See All Pricing <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonials -->
+        <section class="py-24 md:py-32">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="text-center mb-16 fade-up">
+                    <span class="text-xs font-medium uppercase tracking-widest text-brand mb-4 block">Testimonials</span>
+                    <h2 class="text-3xl md:text-5xl font-medium tracking-tight">What Our Customers Say</h2>
+                </div>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="bg-white rounded-3xl p-8 shadow-sm hover:shadow-lg transition-all duration-500 hover:-translate-y-2 fade-up border border-black/5">
+                        <div class="flex gap-1 mb-4">
+                            <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i>
+                            <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i>
+                            <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i>
+                            <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i>
+                            <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i>
+                        </div>
+                        <p class="text-[#57534E] leading-relaxed mb-6">"Absolutely the best car wash in town! My Tesla has never looked better. The ceramic coating is worth every penny — still beading water 6 months later."</p>
+                        <div class="flex items-center gap-3">
+                            <img src="https://picsum.photos/seed/user1/80/80.jpg" alt="Customer" class="w-10 h-10 rounded-full object-cover">
+                            <div>
+                                <div class="font-medium text-sm">Sarah Mitchell</div>
+                                <div class="text-xs text-[#78716C]">Tesla Model 3 Owner</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-3xl p-8 shadow-sm hover:shadow-lg transition-all duration-500 hover:-translate-y-2 fade-up border border-black/5" style="transition-delay:0.1s">
+                        <div class="flex gap-1 mb-4">
+                            <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i>
+                            <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i>
+                            <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i>
+                            <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i>
+                            <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i>
+                        </div>
+                        <p class="text-[#57534E] leading-relaxed mb-6">"I've been coming here weekly for 3 years. The team always remembers my name and my car. The monthly membership pays for itself in just 3 washes!"</p>
+                        <div class="flex items-center gap-3">
+                            <img src="https://picsum.photos/seed/user2/80/80.jpg" alt="Customer" class="w-10 h-10 rounded-full object-cover">
+                            <div>
+                                <div class="font-medium text-sm">James Rodriguez</div>
+                                <div class="text-xs text-[#78716C]">BMW X5 Owner</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-3xl p-8 shadow-sm hover:shadow-lg transition-all duration-500 hover:-translate-y-2 fade-up border border-black/5" style="transition-delay:0.2s">
+                        <div class="flex gap-1 mb-4">
+                            <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i>
+                            <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i>
+                            <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i>
+                            <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i>
+                            <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i>
+                        </div>
+                        <p class="text-[#57534E] leading-relaxed mb-6">"Brought my vintage Mustang here for a full detail. They were incredibly careful and the result was stunning. The interior looks brand new. Highly recommend!"</p>
+                        <div class="flex items-center gap-3">
+                            <img src="https://picsum.photos/seed/user3/80/80.jpg" alt="Customer" class="w-10 h-10 rounded-full object-cover">
+                            <div>
+                                <div class="font-medium text-sm">David Chen</div>
+                                <div class="text-xs text-[#78716C]">Ford Mustang Owner</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA -->
+        <section class="py-24 md:py-32 bg-surface-muted text-white relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-brand/10 via-transparent to-brand/5"></div>
+            <div class="max-w-7xl mx-auto px-6 text-center relative fade-up">
+                <h2 class="text-3xl md:text-5xl font-medium tracking-tight mb-6">Ready for a Sparkling Clean Car?</h2>
+                <p class="text-lg text-white/60 max-w-xl mx-auto mb-10">Book your appointment in 60 seconds and experience the AquaShine difference.</p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <a href="javascript:void(0)" onclick="navigateTo('booking')" class="btn-primary px-10 py-4 rounded-full text-sm font-medium inline-flex items-center gap-2 shadow-lg shadow-brand/30">
+                        <i data-lucide="calendar" class="w-4 h-4"></i> Book Now
+                    </a>
+                    <a href="tel:+15551234567" class="px-10 py-4 rounded-full text-sm font-medium border border-white/20 hover:bg-white/10 transition-all inline-flex items-center gap-2">
+                        <i data-lucide="phone" class="w-4 h-4"></i> (555) 123-4567
+                    </a>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ========== PAGE: SERVICES & PRICING ========== -->
+    <div id="page-services" class="page">
+        <section class="pt-32 pb-16">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="text-center mb-16 fade-up">
+                    <span class="text-xs font-medium uppercase tracking-widest text-brand mb-4 block">Pricing</span>
+                    <h1 class="text-3xl md:text-5xl font-medium tracking-tight mb-4">Services & Pricing</h1>
+                    <p class="text-lg text-[#57534E] max-w-xl mx-auto">Transparent pricing, no hidden fees. Choose the package that fits your needs.</p>
+                </div>
+
+                <!-- Pricing Toggle -->
+                <div class="flex justify-center mb-12 fade-up">
+                    <div class="inline-flex items-center bg-black/5 rounded-full p-1">
+                        <button onclick="setPricing('single')" id="pricingSingle" class="px-6 py-2 rounded-full text-sm font-medium bg-brand text-white transition-all">Single Wash</button>
+                        <button onclick="setPricing('monthly')" id="pricingMonthly" class="px-6 py-2 rounded-full text-sm font-medium text-[#57534E] hover:text-[#1C1917] transition-all">Monthly Plans</button>
+                    </div>
+                </div>
+
+                <!-- Single Wash Pricing -->
+                <div id="singlePricing" class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="pricing-card bg-white rounded-3xl p-8 border border-black/5 hover:shadow-xl fade-up">
+                        <div class="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center mb-5">
+                            <i data-lucide="droplets" class="w-6 h-6 text-blue-500"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Quick Wash</h3>
+                        <p class="text-sm text-[#78716C] mb-6">Essential exterior clean</p>
+                        <div class="text-4xl font-bold mb-1">$15</div>
+                        <div class="text-sm text-[#78716C] mb-6">per wash</div>
+                        <ul class="space-y-3 mb-8">
+                            <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand"></i> Exterior hand wash</li>
+                            <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand"></i> Wheel cleaning</li>
+                            <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand"></i> Towel dry</li>
+                            <li class="flex items-center gap-2 text-sm text-[#78716C]"><i data-lucide="x" class="w-4 h-4 text-[#78716C]"></i> Interior cleaning</li>
+                        </ul>
+                        <a href="javascript:void(0)" onclick="navigateTo('booking')" class="btn-outline w-full py-3 rounded-full text-sm font-medium flex items-center justify-center gap-2">Select Plan</a>
+                    </div>
+
+                    <div class="pricing-card pricing-popular bg-white rounded-3xl p-8 shadow-xl fade-up" style="transition-delay:0.1s">
+                        <div class="w-12 h-12 rounded-2xl bg-brand/20 flex items-center justify-center mb-5">
+                            <i data-lucide="sparkles" class="w-6 h-6 text-brand"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Deluxe Wash</h3>
+                        <p class="text-sm text-[#78716C] mb-6">Our most popular choice</p>
+                        <div class="text-4xl font-bold mb-1">$35</div>
+                        <div class="text-sm text-[#78716C] mb-6">per wash</div>
+                        <ul class="space-y-3 mb-8">
+                            <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand"></i> Full exterior wash</li>
+                            <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand"></i> Interior vacuum</li>
+                            <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand"></i> Dashboard wipe</li>
+                            <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand"></i> Air freshener</li>
+                        </ul>
+                        <a href="javascript:void(0)" onclick="navigateTo('booking')" class="btn-primary w-full py-3 rounded-full text-sm font-medium flex items-center justify-center gap-2">Select Plan</a>
+                    </div>
+
+                    <div class="pricing-card bg-white rounded-3xl p-8 border border-black/5 hover:shadow-xl fade-up" style="transition-delay:0.2s">
+                        <div class="w-12 h-12 rounded-2xl bg-purple-50 flex items-center justify-center mb-5">
+                            <i data-lucide="crown" class="w-6 h-6 text-purple-500"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Premium Detail</h3>
+                        <p class="text-sm text-[#78716C] mb-6">Complete inside & out</p>
+                        <div class="text-4xl font-bold mb-1">$89</div>
+                        <div class="text-sm text-[#78716C] mb-6">per session</div>
+                        <ul class="space-y-3 mb-8">
+                            <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand"></i> Everything in Deluxe</li>
+                            <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand"></i> Hand wax & polish</li>
+                            <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand"></i> Leather treatment</li>
+                            <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand"></i> Engine bay clean</li>
+                        </ul>
+                        <a href="javascript:void(0)" onclick="navigateTo('booking')" class="btn-outline w-full py-3 rounded-full text-sm font-medium flex items-center justify-center gap-2">Select Plan</a>
+                    </div>
+
+                    <div class="pricing-card bg-white rounded-3xl p-8 border border-black/5 hover:shadow-xl fade-up" style="transition-delay:0.3s">
+                        <div class="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center mb-5">
+                            <i data-lucide="shield-check" class="w-6 h-6 text-amber-500"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Ceramic Shield</h3>
+                        <p class="text-sm text-[#78716C] mb-6">Ultimate paint protection</p>
+                        <div class="text-4xl font-bold mb-1">$199</div>
+                        <div class="text-sm text-[#78716C] mb-6">per application</div>
+                        <ul class="space-y-3 mb-8">
+                            <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand"></i> Everything in Premium</li>
+                            <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand"></i> Ceramic coating</li>
+                            <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand"></i> 12-month protection</li>
+                            <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand"></i> Paint correction</li>
+                        </ul>
+                        <a href="javascript:void(0)" onclick="navigateTo('booking')" class="btn-outline w-full py-3 rounded-full text-sm font-medium flex items-center justify-center gap-2">Select Plan</a>
+                    </div>
+                </div>
+
+                <!-- Monthly Pricing -->
+                <div id="monthlyPricing" class="grid md:grid-cols-3 gap-8 hidden">
+                    <div class="pricing-card bg-white rounded-3xl p-8 border border-black/5 hover:shadow-xl fade-up">
+                        <div class="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center mb-5">
+                            <i data-lucide="droplets" class="w-6 h-6 text-blue-500"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Silver Plan</h3>
+                        <p class="text-sm text-[#78716C] mb-6">4 washes per month</p>
+                        <div class="text-4xl font-bold mb-1">$49<span class="text-lg font-normal text-[#78716C]">/mo</span></div>
+                        <div class="text-sm text-[#78716C] mb-6">Save $11 vs single</div>
+                        <ul class="space-y-3 mb-8">
+                            <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand"></i> 4 Quick Washes</li>
+                            <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand"></i> Priority scheduling</li>
+                            <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand"></i> 10% off add-ons</li>
+                        </ul>
+                        <a href="javascript:void(0)" onclick="navigateTo('booking')" class="btn-outline w-full py-3 rounded-full text-sm font-medium flex items-center justify-center gap-2">Get Started</a>
+                    </div>
+                    <div class="pricing-card pricing-popular bg-white rounded-3xl p-8 shadow-xl fade-up" style="transition-delay:0.1s">
+                        <div class="w-12 h-12 rounded-2xl bg-brand/20 flex items-center justify-center mb-5">
+                            <i data-lucide="sparkles" class="w-6 h-6 text-brand"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Gold Plan</h3>
+                        <p class="text-sm text-[#78716C] mb-6">Unlimited Deluxe washes</p>
+                        <div class="text-4xl font-bold mb-1">$79<span class="text-lg font-normal text-[#78716C]">/mo</span></div>
+                        <div class="text-sm text-[#78716C] mb-6">Best value overall</div>
+                        <ul class="space-y-3 mb-8">
+                            <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand"></i> Unlimited Deluxe Wash</li>
+                            <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand"></i> Free air fresheners</li>
+                            <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand"></i> 15% off detailing</li>
+                        </ul>
+                        <a href="javascript:void(0)" onclick="navigateTo('booking')" class="btn-primary w-full py-3 rounded-full text-sm font-medium flex items-center justify-center gap-2">Get Started</a>
+                    </div>
+                    <div class="pricing-card bg-white rounded-3xl p-8 border border-black/5 hover:shadow-xl fade-up" style="transition-delay:0.2s">
+                        <div class="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center mb-5">
+                            <i data-lucide="crown" class="w-6 h-6 text-amber-500"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Platinum Plan</h3>
+                        <p class="text-sm text-[#78716C] mb-6">The ultimate package</p>
+                        <div class="text-4xl font-bold mb-1">$149<span class="text-lg font-normal text-[#78716C]">/mo</span></div>
+                        <div class="text-sm text-[#78716C] mb-6">Save $50+ per month</div>
+                        <ul class="space-y-3 mb-8">
+                            <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand"></i> Unlimited all washes</li>
+                            <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand"></i> Monthly Premium Detail</li>
+                            <li class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand"></i> Free ceramic touch-up</li>
+                        </ul>
+                        <a href="javascript:void(0)" onclick="navigateTo('booking')" class="btn-outline w-full py-3 rounded-full text-sm font-medium flex items-center justify-center gap-2">Get Started</a>
+                    </div>
+                </div>
+
+                <!-- Add-on Services -->
+                <div class="mt-20 fade-up">
+                    <h3 class="text-2xl font-medium text-center mb-10">Add-On Services</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-white rounded-2xl p-5 text-center border border-black/5 hover:border-brand/30 transition">
+                            <i data-lucide="wind" class="w-6 h-6 text-brand mx-auto mb-2"></i>
+                            <div class="font-medium text-sm">Odor Removal</div>
+                            <div class="text-brand font-semibold mt-1">+$20</div>
+                        </div>
+                        <div class="bg-white rounded-2xl p-5 text-center border border-black/5 hover:border-brand/30 transition">
+                            <i data-lucide="paintbrush" class="w-6 h-6 text-brand mx-auto mb-2"></i>
+                            <div class="font-medium text-sm">Scratch Repair</div>
+                            <div class="text-brand font-semibold mt-1">+$45</div>
+                        </div>
+                        <div class="bg-white rounded-2xl p-5 text-center border border-black/5 hover:border-brand/30 transition">
+                            <i data-lucide="lamp-desk" class="w-6 h-6 text-brand mx-auto mb-2"></i>
+                            <div class="font-medium text-sm">Headlight Restore</div>
+                            <div class="text-brand font-semibold mt-1">+$35</div>
+                        </div>
+                        <div class="bg-white rounded-2xl p-5 text-center border border-black/5 hover:border-brand/30 transition">
+                            <i data-lucide="armchair" class="w-6 h-6 text-brand mx-auto mb-2"></i>
+                            <div class="font-medium text-sm">Seat Shampoo</div>
+                            <div class="text-brand font-semibold mt-1">+$30</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ========== PAGE: GALLERY ========== -->
+    <div id="page-gallery" class="page">
+        <section class="pt-32 pb-16">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="text-center mb-12 fade-up">
+                    <span class="text-xs font-medium uppercase tracking-widest text-brand mb-4 block">Our Work</span>
+                    <h1 class="text-3xl md:text-5xl font-medium tracking-tight mb-4">Gallery</h1>
+                    <p class="text-lg text-[#57534E] max-w-xl mx-auto">See the transformations for yourself. Before and after results that speak volumes.</p>
+                </div>
+
+                <!-- Filter Tabs -->
+                <div class="flex justify-center gap-2 mb-10 flex-wrap fade-up">
+                    <button onclick="filterGallery('all')" class="gallery-filter active px-5 py-2 rounded-full text-sm font-medium bg-brand text-white transition-all" data-filter="all">All</button>
+                    <button onclick="filterGallery('exterior')" class="gallery-filter px-5 py-2 rounded-full text-sm font-medium bg-black/5 text-[#57534E] hover:bg-black/10 transition-all" data-filter="exterior">Exterior</button>
+                    <button onclick="filterGallery('interior')" class="gallery-filter px-5 py-2 rounded-full text-sm font-medium bg-black/5 text-[#57534E] hover:bg-black/10 transition-all" data-filter="interior">Interior</button>
+                    <button onclick="filterGallery('detailing')" class="gallery-filter px-5 py-2 rounded-full text-sm font-medium bg-black/5 text-[#57534E] hover:bg-black/10 transition-all" data-filter="detailing">Detailing</button>
+                    <button onclick="filterGallery('ceramic')" class="gallery-filter px-5 py-2 rounded-full text-sm font-medium bg-black/5 text-[#57534E] hover:bg-black/10 transition-all" data-filter="ceramic">Ceramic</button>
+                </div>
+
+                <!-- Gallery Grid -->
+                <div id="galleryGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <div class="gallery-item rounded-2xl cursor-pointer relative group fade-up" data-category="exterior" onclick="openLightbox(this)">
+                        <img src="https://picsum.photos/seed/cw-ext1/600/400.jpg" alt="Exterior Wash" class="w-full h-48 md:h-56 object-cover rounded-2xl">
+                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 rounded-2xl flex items-center justify-center">
+                            <i data-lucide="zoom-in" class="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                        </div>
+                        <div class="absolute bottom-3 left-3 px-3 py-1 bg-black/60 backdrop-blur-sm rounded-full text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">Exterior</div>
+                    </div>
+                    <div class="gallery-item rounded-2xl cursor-pointer relative group fade-up" data-category="interior" onclick="openLightbox(this)" style="transition-delay:0.05s">
+                        <img src="https://picsum.photos/seed/cw-int1/600/400.jpg" alt="Interior Clean" class="w-full h-48 md:h-56 object-cover rounded-2xl">
+                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 rounded-2xl flex items-center justify-center">
+                            <i data-lucide="zoom-in" class="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                        </div>
+                        <div class="absolute bottom-3 left-3 px-3 py-1 bg-black/60 backdrop-blur-sm rounded-full text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">Interior</div>
+                    </div>
+                    <div class="gallery-item rounded-2xl cursor-pointer relative group fade-up" data-category="detailing" onclick="openLightbox(this)" style="transition-delay:0.1s">
+                        <img src="https://picsum.photos/seed/cw-det1/600/400.jpg" alt="Detailing" class="w-full h-48 md:h-56 object-cover rounded-2xl">
+                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 rounded-2xl flex items-center justify-center">
+                            <i data-lucide="zoom-in" class="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                        </div>
+                        <div class="absolute bottom-3 left-3 px-3 py-1 bg-black/60 backdrop-blur-sm rounded-full text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">Detailing</div>
+                    </div>
+                    <div class="gallery-item rounded-2xl cursor-pointer relative group fade-up" data-category="ceramic" onclick="openLightbox(this)" style="transition-delay:0.15s">
+                        <img src="https://picsum.photos/seed/cw-cer1/600/400.jpg" alt="Ceramic Coating" class="w-full h-48 md:h-56 object-cover rounded-2xl">
+                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 rounded-2xl flex items-center justify-center">
+                            <i data-lucide="zoom-in" class="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                        </div>
+                        <div class="absolute bottom-3 left-3 px-3 py-1 bg-black/60 backdrop-blur-sm rounded-full text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">Ceramic</div>
+                    </div>
+                    <div class="gallery-item rounded-2xl cursor-pointer relative group fade-up" data-category="exterior" onclick="openLightbox(this)">
+                        <img src="https://picsum.photos/seed/cw-ext2/600/400.jpg" alt="Exterior Wash" class="w-full h-48 md:h-56 object-cover rounded-2xl">
+                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 rounded-2xl flex items-center justify-center">
+                            <i data-lucide="zoom-in" class="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                        </div>
+                        <div class="absolute bottom-3 left-3 px-3 py-1 bg-black/60 backdrop-blur-sm rounded-full text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">Exterior</div>
+                    </div>
+                    <div class="gallery-item rounded-2xl cursor-pointer relative group fade-up" data-category="interior" onclick="openLightbox(this)" style="transition-delay:0.05s">
+                        <img src="https://picsum.photos/seed/cw-int2/600/400.jpg" alt="Interior Clean" class="w-full h-48 md:h-56 object-cover rounded-2xl">
+                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 rounded-2xl flex items-center justify-center">
+                            <i data-lucide="zoom-in" class="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                        </div>
+                        <div class="absolute bottom-3 left-3 px-3 py-1 bg-black/60 backdrop-blur-sm rounded-full text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">Interior</div>
+                    </div>
+                    <div class="gallery-item rounded-2xl cursor-pointer relative group fade-up" data-category="detailing" onclick="openLightbox(this)" style="transition-delay:0.1s">
+                        <img src="https://picsum.photos/seed/cw-det2/600/400.jpg" alt="Detailing" class="w-full h-48 md:h-56 object-cover rounded-2xl">
+                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 rounded-2xl flex items-center justify-center">
+                            <i data-lucide="zoom-in" class="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                        </div>
+                        <div class="absolute bottom-3 left-3 px-3 py-1 bg-black/60 backdrop-blur-sm rounded-full text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">Detailing</div>
+                    </div>
+                    <div class="gallery-item rounded-2xl cursor-pointer relative group fade-up" data-category="ceramic" onclick="openLightbox(this)" style="transition-delay:0.15s">
+                        <img src="https://picsum.photos/seed/cw-cer2/600/400.jpg" alt="Ceramic Coating" class="w-full h-48 md:h-56 object-cover rounded-2xl">
+                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 rounded-2xl flex items-center justify-center">
+                            <i data-lucide="zoom-in" class="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                        </div>
+                        <div class="absolute bottom-3 left-3 px-3 py-1 bg-black/60 backdrop-blur-sm rounded-full text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">Ceramic</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ========== PAGE: BOOKING ========== -->
+    <div id="page-booking" class="page">
+        <section class="pt-32 pb-16">
+            <div class="max-w-3xl mx-auto px-6">
+                <div class="text-center mb-12 fade-up">
+                    <span class="text-xs font-medium uppercase tracking-widest text-brand mb-4 block">Appointment</span>
+                    <h1 class="text-3xl md:text-5xl font-medium tracking-tight mb-4">Book Your Wash</h1>
+                    <p class="text-lg text-[#57534E]">Select your service, pick a time, and we'll handle the rest.</p>
+                </div>
+
+                <!-- Progress Steps -->
+                <div class="flex items-center justify-center gap-4 mb-12 fade-up">
+                    <div class="booking-step flex items-center gap-2" data-step="1">
+                        <div class="w-8 h-8 rounded-full bg-brand text-white flex items-center justify-center text-sm font-semibold step-circle">1</div>
+                        <span class="text-sm font-medium hidden sm:inline">Service</span>
+                    </div>
+                    <div class="w-12 h-px bg-black/10"></div>
+                    <div class="booking-step flex items-center gap-2" data-step="2">
+                        <div class="w-8 h-8 rounded-full bg-black/10 text-[#78716C] flex items-center justify-center text-sm font-semibold step-circle">2</div>
+                        <span class="text-sm font-medium text-[#78716C] hidden sm:inline">Schedule</span>
+                    </div>
+                    <div class="w-12 h-px bg-black/10"></div>
+                    <div class="booking-step flex items-center gap-2" data-step="3">
+                        <div class="w-8 h-8 rounded-full bg-black/10 text-[#78716C] flex items-center justify-center text-sm font-semibold step-circle">3</div>
+                        <span class="text-sm font-medium text-[#78716C] hidden sm:inline">Details</span>
+                    </div>
+                </div>
+
+                <!-- Step 1 -->
+                <div id="bookingStep1" class="booking-content fade-up">
+                    <h3 class="text-xl font-semibold mb-6">Choose Your Service</h3>
+                    <div class="grid gap-4">
+                        <label class="service-option flex items-center gap-4 p-5 rounded-2xl border-2 border-black/5 cursor-pointer hover:border-brand/50 transition-all">
+                            <input type="radio" name="service" value="quick" class="w-5 h-5 accent-[#A3B14B]">
+                            <div class="flex-1">
+                                <div class="font-medium">Quick Wash</div>
+                                <div class="text-sm text-[#78716C]">Exterior hand wash, rinse & dry</div>
+                            </div>
+                            <div class="font-semibold text-brand">$15</div>
+                        </label>
+                        <label class="service-option flex items-center gap-4 p-5 rounded-2xl border-2 border-brand bg-brand/5 cursor-pointer hover:border-brand/50 transition-all">
+                            <input type="radio" name="service" value="deluxe" class="w-5 h-5 accent-[#A3B14B]" checked>
+                            <div class="flex-1">
+                                <div class="font-medium">Deluxe Wash <span class="text-xs bg-brand/10 text-brand px-2 py-0.5 rounded-full ml-1">Popular</span></div>
+                                <div class="text-sm text-[#78716C]">Full wash + interior vacuum & dashboard</div>
+                            </div>
+                            <div class="font-semibold text-brand">$35</div>
+                        </label>
+                        <label class="service-option flex items-center gap-4 p-5 rounded-2xl border-2 border-black/5 cursor-pointer hover:border-brand/50 transition-all">
+                            <input type="radio" name="service" value="premium" class="w-5 h-5 accent-[#A3B14B]">
+                            <div class="flex-1">
+                                <div class="font-medium">Premium Detail</div>
+                                <div class="text-sm text-[#78716C]">Complete interior & exterior + wax</div>
+                            </div>
+                            <div class="font-semibold text-brand">$89</div>
+                        </label>
+                        <label class="service-option flex items-center gap-4 p-5 rounded-2xl border-2 border-black/5 cursor-pointer hover:border-brand/50 transition-all">
+                            <input type="radio" name="service" value="ceramic" class="w-5 h-5 accent-[#A3B14B]">
+                            <div class="flex-1">
+                                <div class="font-medium">Ceramic Shield</div>
+                                <div class="text-sm text-[#78716C]">Ceramic coating + 12-month protection</div>
+                            </div>
+                            <div class="font-semibold text-brand">$199</div>
+                        </label>
+                    </div>
+
+                    <h3 class="text-xl font-semibold mt-8 mb-4">Add-Ons</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="flex items-center gap-3 p-4 rounded-xl border border-black/5 cursor-pointer hover:border-brand/30 transition">
+                            <input type="checkbox" class="w-4 h-4 accent-[#A3B14B]">
+                            <div><div class="text-sm font-medium">Odor Removal</div><div class="text-xs text-brand">+$20</div></div>
+                        </label>
+                        <label class="flex items-center gap-3 p-4 rounded-xl border border-black/5 cursor-pointer hover:border-brand/30 transition">
+                            <input type="checkbox" class="w-4 h-4 accent-[#A3B14B]">
+                            <div><div class="text-sm font-medium">Scratch Repair</div><div class="text-xs text-brand">+$45</div></div>
+                        </label>
+                        <label class="flex items-center gap-3 p-4 rounded-xl border border-black/5 cursor-pointer hover:border-brand/30 transition">
+                            <input type="checkbox" class="w-4 h-4 accent-[#A3B14B]">
+                            <div><div class="text-sm font-medium">Headlight Restore</div><div class="text-xs text-brand">+$35</div></div>
+                        </label>
+                        <label class="flex items-center gap-3 p-4 rounded-xl border border-black/5 cursor-pointer hover:border-brand/30 transition">
+                            <input type="checkbox" class="w-4 h-4 accent-[#A3B14B]">
+                            <div><div class="text-sm font-medium">Seat Shampoo</div><div class="text-xs text-brand">+$30</div></div>
+                        </label>
+                    </div>
+                    <div class="mt-8 flex justify-end">
+                        <button onclick="goToStep(2)" class="btn-primary px-8 py-3 rounded-full text-sm font-medium inline-flex items-center gap-2">
+                            Next Step <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div id="bookingStep2" class="booking-content hidden">
+                    <h3 class="text-xl font-semibold mb-6">Pick Date & Time</h3>
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Preferred Date</label>
+                            <input type="date" id="bookingDate" class="w-full px-4 py-3 rounded-xl border border-black/10 text-sm transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Preferred Time</label>
+                            <div class="grid grid-cols-3 gap-3" id="timeSlots">
+                                <button type="button" onclick="selectTime(this)" class="time-slot py-3 rounded-xl border border-black/10 text-sm font-medium hover:border-brand/50 transition">8:00 AM</button>
+                                <button type="button" onclick="selectTime(this)" class="time-slot py-3 rounded-xl border border-black/10 text-sm font-medium hover:border-brand/50 transition">9:00 AM</button>
+                                <button type="button" onclick="selectTime(this)" class="time-slot py-3 rounded-xl border border-black/10 text-sm font-medium hover:border-brand/50 transition">10:00 AM</button>
+                                <button type="button" onclick="selectTime(this)" class="time-slot py-3 rounded-xl border border-black/10 text-sm font-medium hover:border-brand/50 transition">11:00 AM</button>
+                                <button type="button" onclick="selectTime(this)" class="time-slot py-3 rounded-xl border border-black/10 text-sm font-medium hover:border-brand/50 transition">1:00 PM</button>
+                                <button type="button" onclick="selectTime(this)" class="time-slot py-3 rounded-xl border border-black/10 text-sm font-medium hover:border-brand/50 transition">2:00 PM</button>
+                                <button type="button" onclick="selectTime(this)" class="time-slot py-3 rounded-xl border border-black/10 text-sm font-medium hover:border-brand/50 transition">3:00 PM</button>
+                                <button type="button" onclick="selectTime(this)" class="time-slot py-3 rounded-xl border border-black/10 text-sm font-medium hover:border-brand/50 transition">4:00 PM</button>
+                                <button type="button" onclick="selectTime(this)" class="time-slot selected py-3 rounded-xl border text-sm font-medium">5:00 PM</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Vehicle Type</label>
+                            <select class="w-full px-4 py-3 rounded-xl border border-black/10 text-sm transition">
+                                <option>Sedan / Coupe</option>
+                                <option>SUV / Crossover</option>
+                                <option>Truck / Pickup</option>
+                                <option>Van / Minivan</option>
+                                <option>Sports Car</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mt-8 flex justify-between">
+                        <button onclick="goToStep(1)" class="px-6 py-3 rounded-full text-sm font-medium border border-black/10 hover:bg-black/5 transition inline-flex items-center gap-2">
+                            <i data-lucide="arrow-left" class="w-4 h-4"></i> Back
+                        </button>
+                        <button onclick="goToStep(3)" class="btn-primary px-8 py-3 rounded-full text-sm font-medium inline-flex items-center gap-2">
+                            Next Step <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div id="bookingStep3" class="booking-content hidden">
+                    <h3 class="text-xl font-semibold mb-6">Your Details</h3>
+                    <div class="space-y-5">
+                        <div class="grid md:grid-cols-2 gap-5">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">First Name</label>
+                                <input type="text" placeholder="John" class="w-full px-4 py-3 rounded-xl border border-black/10 text-sm transition">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Last Name</label>
+                                <input type="text" placeholder="Doe" class="w-full px-4 py-3 rounded-xl border border-black/10 text-sm transition">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Email</label>
+                            <input type="email" placeholder="john@example.com" class="w-full px-4 py-3 rounded-xl border border-black/10 text-sm transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Phone</label>
+                            <input type="tel" placeholder="(555) 123-4567" class="w-full px-4 py-3 rounded-xl border border-black/10 text-sm transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Vehicle Make & Model</label>
+                            <input type="text" placeholder="e.g., Toyota Camry 2023" class="w-full px-4 py-3 rounded-xl border border-black/10 text-sm transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Special Requests <span class="text-[#78716C]">(Optional)</span></label>
+                            <textarea rows="3" placeholder="Any special instructions..." class="w-full px-4 py-3 rounded-xl border border-black/10 text-sm transition resize-none"></textarea>
+                        </div>
+                    </div>
+                    <div class="mt-8 flex justify-between">
+                        <button onclick="goToStep(2)" class="px-6 py-3 rounded-full text-sm font-medium border border-black/10 hover:bg-black/5 transition inline-flex items-center gap-2">
+                            <i data-lucide="arrow-left" class="w-4 h-4"></i> Back
+                        </button>
+                        <button onclick="submitBooking()" class="btn-primary px-10 py-3 rounded-full text-sm font-medium inline-flex items-center gap-2 shadow-lg shadow-brand/30">
+                            <i data-lucide="check" class="w-4 h-4"></i> Confirm Booking
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Confirmation -->
+                <div id="bookingConfirmation" class="booking-content hidden text-center py-12">
+                    <div class="w-20 h-20 rounded-full bg-brand/20 flex items-center justify-center mx-auto mb-6">
+                        <i data-lucide="check-circle" class="w-10 h-10 text-brand"></i>
+                    </div>
+                    <h2 class="text-2xl md:text-3xl font-semibold mb-4">Booking Confirmed!</h2>
+                    <p class="text-[#57534E] mb-2">Your appointment has been scheduled successfully.</p>
+                    <p class="text-sm text-[#78716C] mb-8">We've sent a confirmation email with all the details.</p>
+                    <div class="bg-white rounded-2xl p-6 border border-black/5 max-w-sm mx-auto mb-8 text-left">
+                        <div class="space-y-3 text-sm">
+                            <div class="flex justify-between"><span class="text-[#78716C]">Service</span><span class="font-medium" id="confirmService">Deluxe Wash</span></div>
+                            <div class="flex justify-between"><span class="text-[#78716C]">Date</span><span class="font-medium" id="confirmDate">Tomorrow</span></div>
+                            <div class="flex justify-between"><span class="text-[#78716C]">Time</span><span class="font-medium" id="confirmTime">5:00 PM</span></div>
+                            <div class="border-t border-black/5 pt-3 flex justify-between"><span class="text-[#78716C]">Estimated Total</span><span class="font-semibold text-brand" id="confirmTotal">$35</span></div>
+                        </div>
+                    </div>
+                    <a href="javascript:void(0)" onclick="navigateTo('home')" class="btn-primary px-8 py-3 rounded-full text-sm font-medium inline-flex items-center gap-2">
+                        Back to Home <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ========== PAGE: CONTACT ========== -->
+    <div id="page-contact" class="page">
+        <section class="pt-32 pb-16">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="text-center mb-12 fade-up">
+                    <span class="text-xs font-medium uppercase tracking-widest text-brand mb-4 block">Get In Touch</span>
+                    <h1 class="text-3xl md:text-5xl font-medium tracking-tight mb-4">Contact Us</h1>
+                    <p class="text-lg text-[#57534E] max-w-xl mx-auto">Have questions? We'd love to hear from you. Visit us, call, or send a message.</p>
+                </div>
+
+                <!-- Contact Cards -->
+                <div class="grid md:grid-cols-3 gap-6 mb-16">
+                    <div class="bg-white rounded-2xl p-6 text-center border border-black/5 hover:-translate-y-1 transition-all duration-300 fade-up">
+                        <div class="w-12 h-12 rounded-2xl bg-brand/10 flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="map-pin" class="w-6 h-6 text-brand"></i>
+                        </div>
+                        <h3 class="font-semibold mb-1">Visit Us</h3>
+                        <p class="text-sm text-[#78716C]">123 Shine Boulevard<br>Sparkle City, SC 90210</p>
+                    </div>
+                    <div class="bg-white rounded-2xl p-6 text-center border border-black/5 hover:-translate-y-1 transition-all duration-300 fade-up" style="transition-delay:0.1s">
+                        <div class="w-12 h-12 rounded-2xl bg-brand/10 flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="phone" class="w-6 h-6 text-brand"></i>
+                        </div>
+                        <h3 class="font-semibold mb-1">Call Us</h3>
+                        <p class="text-sm text-[#78716C]">(555) 123-4567<br>Mon-Sat: 7AM - 7PM</p>
+                    </div>
+                    <div class="bg-white rounded-2xl p-6 text-center border border-black/5 hover:-translate-y-1 transition-all duration-300 fade-up" style="transition-delay:0.2s">
+                        <div class="w-12 h-12 rounded-2xl bg-brand/10 flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="mail" class="w-6 h-6 text-brand"></i>
+                        </div>
+                        <h3 class="font-semibold mb-1">Email Us</h3>
+                        <p class="text-sm text-[#78716C]">hello@aquashine.com<br>support@aquashine.com</p>
+                    </div>
+                </div>
+
+                <!-- Map & Feedback -->
+                <div class="grid lg:grid-cols-2 gap-8 mb-20">
+                    <div class="rounded-3xl overflow-hidden shadow-lg h-[400px] fade-up">
+                        <iframe
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3305.7!2d-118.39!3d34.05!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x80c2bc04d6d147ab%3A0xd6c7c379fd081ed1!2sBeverly%20Hills%2C%20CA!5e0!3m2!1sen!2sus!4v1690000000000!5m2!1sen!2sus"
+                            width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade">
+                        </iframe>
+                    </div>
+                    <div class="bg-white rounded-3xl p-8 shadow-sm border border-black/5 fade-up" style="transition-delay:0.1s">
+                        <h3 class="text-xl font-semibold mb-6">Send Us Feedback</h3>
+                        <form id="feedbackForm" onsubmit="submitFeedback(event)">
+                            <div class="space-y-4">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1">Name</label>
+                                        <input type="text" required placeholder="Your name" class="w-full px-4 py-2.5 rounded-xl border border-black/10 text-sm transition">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1">Email</label>
+                                        <input type="email" required placeholder="Your email" class="w-full px-4 py-2.5 rounded-xl border border-black/10 text-sm transition">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Rating</label>
+                                    <div class="star-rating flex gap-1" id="starRating">
+                                        <i data-lucide="star" class="w-7 h-7 text-[#78716C] cursor-pointer" onclick="setRating(1)"></i>
+                                        <i data-lucide="star" class="w-7 h-7 text-[#78716C] cursor-pointer" onclick="setRating(2)"></i>
+                                        <i data-lucide="star" class="w-7 h-7 text-[#78716C] cursor-pointer" onclick="setRating(3)"></i>
+                                        <i data-lucide="star" class="w-7 h-7 text-[#78716C] cursor-pointer" onclick="setRating(4)"></i>
+                                        <i data-lucide="star" class="w-7 h-7 text-[#78716C] cursor-pointer" onclick="setRating(5)"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Your Message</label>
+                                    <textarea rows="4" required placeholder="Tell us about your experience..." class="w-full px-4 py-2.5 rounded-xl border border-black/10 text-sm transition resize-none"></textarea>
+                                </div>
+                                <button type="submit" class="btn-primary w-full py-3 rounded-full text-sm font-medium flex items-center justify-center gap-2">
+                                    <i data-lucide="send" class="w-4 h-4"></i> Submit Feedback
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- About Section -->
+                <div class="mb-20 fade-up">
+                    <div class="bg-surface-muted rounded-3xl p-8 md:p-12 text-white relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-[400px] h-[400px] bg-brand/10 rounded-full blur-[100px]"></div>
+                        <div class="relative grid lg:grid-cols-2 gap-12 items-center">
+                            <div>
+                                <span class="text-xs font-medium uppercase tracking-widest text-brand mb-4 block">Our Story</span>
+                                <h2 class="text-3xl md:text-4xl font-medium tracking-tight mb-6">About AquaShine</h2>
+                                <p class="text-white/70 leading-relaxed mb-4">AquaShine was born from a simple belief: every car deserves expert care, and every customer deserves an exceptional experience.</p>
+                                <p class="text-white/70 leading-relaxed mb-6">Our team of 20+ certified detailers uses the latest techniques and eco-friendly products. We recycle up to 80% of our water, use biodegradable soaps, and are committed to leaving a smaller footprint while making your car shine brighter.</p>
+                                <div class="grid grid-cols-3 gap-4">
+                                    <div class="text-center">
+                                        <div class="text-2xl font-semibold text-brand">15K+</div>
+                                        <div class="text-xs text-white/50">Happy Cars</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="text-2xl font-semibold text-brand">20+</div>
+                                        <div class="text-xs text-white/50">Expert Staff</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="text-2xl font-semibold text-brand">80%</div>
+                                        <div class="text-xs text-white/50">Water Recycled</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <img src="https://picsum.photos/seed/carwash-team/700/500.jpg" alt="Our Team" class="w-full rounded-2xl shadow-xl">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ -->
+                <div class="max-w-3xl mx-auto fade-up">
+                    <div class="text-center mb-10">
+                        <span class="text-xs font-medium uppercase tracking-widest text-brand mb-4 block">FAQ</span>
+                        <h2 class="text-3xl md:text-4xl font-medium tracking-tight">Frequently Asked Questions</h2>
+                    </div>
+                    <div class="space-y-3" id="faqContainer">
+                        <div class="faq-item bg-white rounded-2xl border border-black/5 overflow-hidden">
+                            <button onclick="toggleFAQ(this)" class="w-full flex items-center justify-between p-6 text-left">
+                                <span class="font-medium pr-4">How long does a typical car wash take?</span>
+                                <i data-lucide="chevron-down" class="w-5 h-5 text-[#78716C] transition-transform duration-300 faq-icon flex-shrink-0"></i>
+                            </button>
+                            <div class="faq-answer px-6">
+                                <p class="text-[#57534E] text-sm leading-relaxed pb-6">A Quick Wash takes about 15-20 minutes. Deluxe Wash is approximately 30-40 minutes. Premium Detailing ranges from 2-4 hours, and our Ceramic Shield package typically takes a full day. We'll give you an accurate time estimate when you book.</p>
+                            </div>
+                        </div>
+                        <div class="faq-item bg-white rounded-2xl border border-black/5 overflow-hidden">
+                            <button onclick="toggleFAQ(this)" class="w-full flex items-center justify-between p-6 text-left">
+                                <span class="font-medium pr-4">Do I need to make an appointment?</span>
+                                <i data-lucide="chevron-down" class="w-5 h-5 text-[#78716C] transition-transform duration-300 faq-icon flex-shrink-0"></i>
+                            </button>
+                            <div class="faq-answer px-6">
+                                <p class="text-[#57534E] text-sm leading-relaxed pb-6">Walk-ins are welcome for Quick and Deluxe washes! However, we recommend booking ahead for Premium Detail and Ceramic Shield services to ensure we can dedicate the necessary time and bay space for your vehicle.</p>
+                            </div>
+                        </div>
+                        <div class="faq-item bg-white rounded-2xl border border-black/5 overflow-hidden">
+                            <button onclick="toggleFAQ(this)" class="w-full flex items-center justify-between p-6 text-left">
+                                <span class="font-medium pr-4">Are your products safe for all paint types?</span>
+                                <i data-lucide="chevron-down" class="w-5 h-5 text-[#78716C] transition-transform duration-300 faq-icon flex-shrink-0"></i>
+                            </button>
+                            <div class="faq-answer px-6">
+                                <p class="text-[#57534E] text-sm leading-relaxed pb-6">Absolutely! We use pH-balanced, biodegradable formulas that are safe for all paint types including clear coat, metallic, matte, and ceramic-coated finishes. Our products are also safe for chrome, aluminum, and carbon fiber surfaces.</p>
+                            </div>
+                        </div>
+                        <div class="faq-item bg-white rounded-2xl border border-black/5 overflow-hidden">
+                            <button onclick="toggleFAQ(this)" class="w-full flex items-center justify-between p-6 text-left">
+                                <span class="font-medium pr-4">What's included in the monthly membership?</span>
+                                <i data-lucide="chevron-down" class="w-5 h-5 text-[#78716C] transition-transform duration-300 faq-icon flex-shrink-0"></i>
+                            </button>
+                            <div class="faq-answer px-6">
+                                <p class="text-[#57534E] text-sm leading-relaxed pb-6">Our monthly plans include unlimited washes at your selected tier, priority scheduling, discounts on add-on services, and free air fresheners with each visit. You can cancel anytime with 30 days' notice. No long-term contracts!</p>
+                            </div>
+                        </div>
+                        <div class="faq-item bg-white rounded-2xl border border-black/5 overflow-hidden">
+                            <button onclick="toggleFAQ(this)" class="w-full flex items-center justify-between p-6 text-left">
+                                <span class="font-medium pr-4">How long does ceramic coating last?</span>
+                                <i data-lucide="chevron-down" class="w-5 h-5 text-[#78716C] transition-transform duration-300 faq-icon flex-shrink-0"></i>
+                            </button>
+                            <div class="faq-answer px-6">
+                                <p class="text-[#57534E] text-sm leading-relaxed pb-6">Our professional ceramic coating provides up to 12 months of protection when properly maintained. We include a care guide and recommend complimentary touch-ups every 6 months for Platinum members. The coating protects against UV rays, acid rain, bird droppings, and minor scratches.</p>
+                            </div>
+                        </div>
+                        <div class="faq-item bg-white rounded-2xl border border-black/5 overflow-hidden">
+                            <button onclick="toggleFAQ(this)" class="w-full flex items-center justify-between p-6 text-left">
+                                <span class="font-medium pr-4">Do you offer pickup and delivery service?</span>
+                                <i data-lucide="chevron-down" class="w-5 h-5 text-[#78716C] transition-transform duration-300 faq-icon flex-shrink-0"></i>
+                            </button>
+                            <div class="faq-answer px-6">
+                                <p class="text-[#57534E] text-sm leading-relaxed pb-6">Yes! We offer complimentary pickup and delivery within a 5-mile radius for Premium Detail and Ceramic Shield packages. For other services, pickup/delivery is available for a small fee of $15. Schedule through our booking page or call us directly.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ========== FOOTER ========== -->
+    <footer class="bg-surface-muted text-white py-16">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid md:grid-cols-4 gap-10 mb-12">
+                <div class="md:col-span-1">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-8 h-8 rounded-full bg-brand flex items-center justify-center">
+                            <i data-lucide="droplets" class="w-4 h-4 text-white"></i>
+                        </div>
+                        <span class="text-lg font-semibold">AquaShine</span>
+                    </div>
+                    <p class="text-sm text-white/50 leading-relaxed">Premium car wash & detailing. Eco-friendly products, expert care, showroom results.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-sm mb-4">Quick Links</h4>
+                    <div class="flex flex-col gap-2">
+                        <a href="javascript:void(0)" onclick="navigateTo('home')" class="text-sm text-white/50 hover:text-brand transition">Home</a>
+                        <a href="javascript:void(0)" onclick="navigateTo('services')" class="text-sm text-white/50 hover:text-brand transition">Services & Pricing</a>
+                        <a href="javascript:void(0)" onclick="navigateTo('gallery')" class="text-sm text-white/50 hover:text-brand transition">Gallery</a>
+                        <a href="javascript:void(0)" onclick="navigateTo('booking')" class="text-sm text-white/50 hover:text-brand transition">Book Now</a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-sm mb-4">Services</h4>
+                    <div class="flex flex-col gap-2">
+                        <span class="text-sm text-white/50">Quick Wash — $15</span>
+                        <span class="text-sm text-white/50">Deluxe Wash — $35</span>
+                        <span class="text-sm text-white/50">Premium Detail — $89</span>
+                        <span class="text-sm text-white/50">Ceramic Shield — $199</span>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-sm mb-4">Hours</h4>
+                    <div class="flex flex-col gap-2">
+                        <span class="text-sm text-white/50">Mon-Fri: 7AM - 7PM</span>
+                        <span class="text-sm text-white/50">Saturday: 8AM - 6PM</span>
+                        <span class="text-sm text-white/50">Sunday: 9AM - 4PM</span>
+                    </div>
+                    <div class="flex gap-3 mt-4">
+                        <a href="#" class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-brand transition"><i data-lucide="facebook" class="w-4 h-4"></i></a>
+                        <a href="#" class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-brand transition"><i data-lucide="instagram" class="w-4 h-4"></i></a>
+                        <a href="#" class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-brand transition"><i data-lucide="twitter" class="w-4 h-4"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-sm text-white/40">© 2024 AquaShine Car Wash. All rights reserved.</p>
+                <div class="flex gap-6">
+                    <a href="#" class="text-sm text-white/40 hover:text-white/60 transition">Privacy Policy</a>
+                    <a href="#" class="text-sm text-white/40 hover:text-white/60 transition">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- LIGHTBOX -->
+    <div id="lightbox" class="lightbox" onclick="closeLightbox(event)">
+        <button onclick="closeLightbox(event)" class="absolute top-6 right-6 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition z-10">
+            <i data-lucide="x" class="w-5 h-5 text-white"></i>
+        </button>
+        <img id="lightboxImg" src="" alt="Gallery" class="max-w-[90vw] max-h-[85vh] rounded-2xl object-contain">
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast" class="toast">
+        <div class="bg-surface-muted text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 border border-white/10">
+            <div class="w-8 h-8 rounded-full bg-brand/20 flex items-center justify-center flex-shrink-0">
+                <i data-lucide="check" class="w-4 h-4 text-brand"></i>
+            </div>
+            <span id="toastMessage" class="text-sm font-medium">Success!</span>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // ========== NAVIGATION ==========
+        let currentPage = 'home';
+
+        function navigateTo(page) {
+            if (currentPage === page) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+            }
+
+            // Remove active from all pages
+            document.querySelectorAll('.page').forEach(p => {
+                p.classList.remove('active');
+                p.style.opacity = '0';
+                p.style.transform = 'translateY(20px)';
+            });
+
+            // Set new page active
+            const target = document.getElementById('page-' + page);
+            if (target) {
+                // Small delay for transition
+                setTimeout(() => {
+                    target.classList.add('active');
+                    currentPage = page;
+
+                    // Update nav active state
+                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                    document.querySelectorAll(`.nav-link[data-page="${page}"]`).forEach(l => l.classList.add('active'));
+
+                    // Scroll to top
+                    window.scrollTo({ top: 0, behavior: 'instant' });
+
+                    // Re-init icons & animations
+                    setTimeout(() => {
+                        lucide.createIcons();
+                        observeFadeElements();
+                        updateNavbar();
+                    }, 50);
+                }, 50);
+            }
+        }
+
+        // Mobile menu
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            const overlay = document.getElementById('mobileOverlay');
+            menu.classList.toggle('open');
+            overlay.classList.toggle('hidden');
+        }
+
+        // Navbar update function
+        function updateNavbar() {
+            const navbar = document.getElementById('navbar');
+            const scrolled = window.scrollY > 50;
+            const isHomePage = currentPage === 'home';
+
+            if (scrolled || !isHomePage) {
+                navbar.style.background = 'rgba(255,255,255,0.95)';
+                navbar.style.backdropFilter = 'blur(12px)';
+                navbar.style.borderBottom = '1px solid rgba(0,0,0,0.05)';
+                navbar.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)';
+                document.querySelectorAll('.nav-text-color').forEach(el => {
+                    el.style.color = '#1C1917';
+                });
+            } else {
+                navbar.style.background = 'transparent';
+                navbar.style.backdropFilter = 'none';
+                navbar.style.borderBottom = 'none';
+                navbar.style.boxShadow = 'none';
+                document.querySelectorAll('.nav-text-color').forEach(el => {
+                    el.style.color = '#FFFFFF';
+                });
+            }
+        }
+
+        // Navbar scroll behavior
+        window.addEventListener('scroll', updateNavbar);
+
+        // ========== SCROLL ANIMATIONS ==========
+        function observeFadeElements() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+            document.querySelectorAll('.fade-up:not(.visible)').forEach(el => observer.observe(el));
+        }
+        observeFadeElements();
+
+        // ========== PRICING TOGGLE ==========
+        function setPricing(type) {
+            const singleBtn = document.getElementById('pricingSingle');
+            const monthlyBtn = document.getElementById('pricingMonthly');
+            const singlePricing = document.getElementById('singlePricing');
+            const monthlyPricing = document.getElementById('monthlyPricing');
+
+            if (type === 'single') {
+                singleBtn.className = 'px-6 py-2 rounded-full text-sm font-medium bg-brand text-white transition-all';
+                monthlyBtn.className = 'px-6 py-2 rounded-full text-sm font-medium text-[#57534E] hover:text-[#1C1917] transition-all';
+                singlePricing.classList.remove('hidden');
+                monthlyPricing.classList.add('hidden');
+            } else {
+                monthlyBtn.className = 'px-6 py-2 rounded-full text-sm font-medium bg-brand text-white transition-all';
+                singleBtn.className = 'px-6 py-2 rounded-full text-sm font-medium text-[#57534E] hover:text-[#1C1917] transition-all';
+                monthlyPricing.classList.remove('hidden');
+                singlePricing.classList.add('hidden');
+            }
+            setTimeout(() => observeFadeElements(), 50);
+        }
+
+        // ========== GALLERY ==========
+        function filterGallery(filter) {
+            document.querySelectorAll('.gallery-filter').forEach(btn => {
+                if (btn.dataset.filter === filter) {
+                    btn.className = 'gallery-filter active px-5 py-2 rounded-full text-sm font-medium bg-brand text-white transition-all';
+                } else {
+                    btn.className = 'gallery-filter px-5 py-2 rounded-full text-sm font-medium bg-black/5 text-[#57534E] hover:bg-black/10 transition-all';
+                }
+            });
+
+            document.querySelectorAll('.gallery-item').forEach(item => {
+                if (filter === 'all' || item.dataset.category === filter) {
+                    item.style.display = 'block';
+                    setTimeout(() => { item.style.opacity = '1'; item.style.transform = 'scale(1)'; }, 50);
+                } else {
+                    item.style.opacity = '0';
+                    item.style.transform = 'scale(0.8)';
+                    setTimeout(() => { item.style.display = 'none'; }, 300);
+                }
+            });
+        }
+
+        // Lightbox
+        function openLightbox(el) {
+            const img = el.querySelector('img');
+            document.getElementById('lightboxImg').src = img.src;
+            document.getElementById('lightbox').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox(e) {
+            if (e && e.target && e.target.id !== 'lightbox' && e.target.tagName !== 'BUTTON' && !e.target.closest('button')) return;
+            document.getElementById('lightbox').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.getElementById('lightbox').classList.remove('open');
+                document.body.style.overflow = '';
+            }
+        });
+
+        // ========== BOOKING ==========
+        let currentStep = 1;
+        let selectedTime = '5:00 PM';
+        let feedbackRating = 0;
+
+        function goToStep(step) {
+            document.querySelectorAll('.booking-content').forEach(c => c.classList.add('hidden'));
+            document.getElementById('bookingStep' + step).classList.remove('hidden');
+            currentStep = step;
+
+            // Update step indicators
+            document.querySelectorAll('.step-circle').forEach((circle, i) => {
+                if (i + 1 <= step) {
+                    circle.className = 'w-8 h-8 rounded-full bg-brand text-white flex items-center justify-center text-sm font-semibold step-circle';
+                } else {
+                    circle.className = 'w-8 h-8 rounded-full bg-black/10 text-[#78716C] flex items-center justify-center text-sm font-semibold step-circle';
+                }
+            });
+
+            lucide.createIcons();
+            observeFadeElements();
+        }
+
+        function selectTime(btn) {
+            document.querySelectorAll('.time-slot').forEach(s => {
+                s.classList.remove('selected');
+            });
+            btn.classList.add('selected');
+            selectedTime = btn.textContent.trim();
+        }
+
+        function submitBooking() {
+            const service = document.querySelector('input[name="service"]:checked');
+            const prices = { quick: '$15', deluxe: '$35', premium: '$89', ceramic: '$199' };
+            const names = { quick: 'Quick Wash', deluxe: 'Deluxe Wash', premium: 'Premium Detail', ceramic: 'Ceramic Shield' };
+
+            document.getElementById('confirmService').textContent = names[service?.value] || 'Deluxe Wash';
+            document.getElementById('confirmTime').textContent = selectedTime;
+            document.getElementById('confirmTotal').textContent = prices[service?.value] || '$35';
+
+            const dateInput = document.getElementById('bookingDate');
+            if (dateInput && dateInput.value) {
+                const d = new Date(dateInput.value + 'T12:00');
+                document.getElementById('confirmDate').textContent = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+            } else {
+                document.getElementById('confirmDate').textContent = 'Tomorrow';
+            }
+
+            document.querySelectorAll('.booking-content').forEach(c => c.classList.add('hidden'));
+            document.getElementById('bookingConfirmation').classList.remove('hidden');
+
+            showToast('Booking confirmed successfully!');
+            lucide.createIcons();
+        }
+
+        // ========== FAQ ==========
+        function toggleFAQ(btn) {
+            const answer = btn.nextElementSibling;
+            const icon = btn.querySelector('.faq-icon');
+            const isOpen = answer.classList.contains('open');
+
+            // Close all
+            document.querySelectorAll('.faq-answer').forEach(a => a.classList.remove('open'));
+            document.querySelectorAll('.faq-icon').forEach(i => i.style.transform = 'rotate(0deg)');
+
+            if (!isOpen) {
+                answer.classList.add('open');
+                icon.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        // ========== FEEDBACK ==========
+        function setRating(rating) {
+            feedbackRating = rating;
+            const stars = document.querySelectorAll('#starRating i');
+            stars.forEach((star, i) => {
+                if (i < rating) {
+                    star.style.fill = '#facc15';
+                    star.style.color = '#facc15';
+                } else {
+                    star.style.fill = 'none';
+                    star.style.color = '#78716C';
+                }
+            });
+        }
+
+        function submitFeedback(e) {
+            e.preventDefault();
+            showToast('Thank you for your feedback!');
+            document.getElementById('feedbackForm').reset();
+            setRating(0);
+        }
+
+        // ========== TOAST ==========
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3500);
+        }
+
+        // ========== SERVICE OPTION HIGHLIGHT ==========
+        document.querySelectorAll('.service-option input').forEach(input => {
+            input.addEventListener('change', () => {
+                document.querySelectorAll('.service-option').forEach(opt => {
+                    opt.classList.remove('border-brand', 'bg-brand/5');
+                    opt.classList.add('border-black/5');
+                });
+                if (input.checked) {
+                    const parent = input.closest('.service-option');
+                    parent.classList.remove('border-black/5');
+                    parent.classList.add('border-brand', 'bg-brand/5');
+                }
+            });
+        });
+
+        // Set min date to today
+        const dateInput = document.getElementById('bookingDate');
+        if (dateInput) {
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.min = today;
+            dateInput.value = today;
+        }
+
+        // Initial navbar state
+        updateNavbar();
+    </script>
+</body>
+</html>
